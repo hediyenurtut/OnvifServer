@@ -51,25 +51,18 @@
       <version>${cxf.version}</version>
     </dependency>
 
-    <!-- WS-Security (ONVIF authentication) -->
-    <dependency>
-      <groupId>org.apache.cxf</groupId>
-      <artifactId>cxf-rt-ws-security</artifactId>
-      <version>${cxf.version}</version>
-    </dependency>
-
-    <!-- WS-Addressing (ONVIF events) -->
-    <dependency>
-      <groupId>org.apache.cxf</groupId>
-      <artifactId>cxf-rt-ws-addr</artifactId>
-      <version>${cxf.version}</version>
-    </dependency>
-
     <!-- Lombok -->
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
       <optional>true</optional>
+    </dependency>
+
+    <!-- Spring Boot Test -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 
