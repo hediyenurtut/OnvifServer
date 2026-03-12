@@ -16,7 +16,8 @@ import org.springframework.context.annotation.Configuration;
  *
  * Hizmet URL'leri:
  *   Device Management : /onvif/device_service
- *   Media2            : /onvif/media2_service
+ *   Media (Profile S) : /onvif/media_service
+ *   Media2 (Profile T) : /onvif/media2_service
  *   PTZ               : /onvif/ptz_service
  *   Events            : /onvif/event_service
  *   Imaging           : /onvif/imaging_service
@@ -30,6 +31,14 @@ public class CxfWebServiceConfig {
         EndpointImpl ep = new EndpointImpl(bus, deviceService);
         ep.setBindingUri(SOAPBinding.SOAP12HTTP_BINDING);
         ep.publish("/onvif/device_service");
+        return ep;
+    }
+
+    @Bean
+    public Endpoint mediaEndpoint(Bus bus, MediaServiceEndpoint mediaService) {
+        EndpointImpl ep = new EndpointImpl(bus, mediaService);
+        ep.setBindingUri(SOAPBinding.SOAP12HTTP_BINDING);
+        ep.publish("/onvif/media_service");
         return ep;
     }
 
