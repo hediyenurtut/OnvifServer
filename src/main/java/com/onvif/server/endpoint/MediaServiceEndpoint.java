@@ -1,6 +1,10 @@
 package com.onvif.server.endpoint;
 
 import com.onvif.server.model.media.*;
+import com.onvif.server.model.ptz.PTZConfiguration;
+import com.onvif.server.model.ptz.PTZSpeed;
+import com.onvif.server.model.ptz.Vector1D;
+import com.onvif.server.model.ptz.Vector2D;
 import jakarta.jws.*;
 import jakarta.jws.soap.SOAPBinding;
 import jakarta.jws.soap.SOAPBinding.*;
@@ -56,6 +60,20 @@ public class MediaServiceEndpoint {
     }
 
     // ----------------------------------------------------------------
+    // GetProfiles
+    // ----------------------------------------------------------------
+
+    @WebMethod(operationName = "GetProfiles")
+    @WebResult(name = "Profiles",
+               targetNamespace = "http://www.onvif.org/ver10/media/wsdl")
+    public List<Profile> getProfiles(
+            @WebParam(name = "ProfileToken",
+                      targetNamespace = "http://www.onvif.org/ver10/media/wsdl")
+            String profileToken) {
+        return buildProfiles();
+    }
+
+    // ----------------------------------------------------------------
     // GetVideoSourceConfigurations
     // ----------------------------------------------------------------
 
@@ -66,6 +84,17 @@ public class MediaServiceEndpoint {
         List<VideoSourceConfiguration> list = new ArrayList<>();
         list.add(buildVideoSourceConfiguration("vsc_main", "vs_main"));
         return list;
+    }
+
+    // ----------------------------------------------------------------
+    // GetVideoEncoderConfigurations
+    // ----------------------------------------------------------------
+
+    @WebMethod(operationName = "GetVideoEncoderConfigurations")
+    @WebResult(name = "VideoEncoderConfigurations",
+               targetNamespace = "http://www.onvif.org/ver10/media/wsdl")
+    public List<VideoEncoderConfiguration> getVideoEncoderConfigurations() {
+        return buildVideoEncoderConfigurations();
     }
 
     // ----------------------------------------------------------------
@@ -114,6 +143,22 @@ public class MediaServiceEndpoint {
     // Builder helpers
     // ================================================================
 
+    private List<Profile> buildProfiles() {
+        List<Profile> profiles = new ArrayList<>();
+
+        Profile h264Profile = new Profile();
+        h264Profile.setToken("profile_main_h264");
+        h264Profile.setName("Main H.264 Profile");
+        h264Profile.setFixed(false);
+        h264Profile.setVideoSourceConfiguration(buildVideoSourceConfiguration("vsc_main", "vs_main"));
+        h264Profile.setVideoEncoderConfiguration(buildH264EncoderConfiguration());
+        h264Profile.setPtzConfiguration(buildPtzConfiguration());
+        h264Profile.setMetadataConfiguration(buildMetadataConfiguration());
+        profiles.add(h264Profile);
+
+        return profiles;
+    }
+
     private VideoSourceConfiguration buildVideoSourceConfiguration(String token, String sourceToken) {
         VideoSourceConfiguration vsc = new VideoSourceConfiguration();
         vsc.setToken(token);
@@ -122,5 +167,60 @@ public class MediaServiceEndpoint {
         vsc.setSourceToken(sourceToken);
         vsc.setBounds(new IntRectangle(0, 0, 1920, 1080));
         return vsc;
+    }
+
+    private List<VideoEncoderConfiguration> buildVideoEncoderConfigurations() {
+        List<VideoEncoderConfiguration> list = new ArrayList<>();
+        list.add(buildH264EncoderConfiguration());
+        return list;
+    }
+
+    private VideoEncoderConfiguration buildH264EncoderConfiguration() {
+        VideoEncoderConfiguration vec = new VideoEncoderConfiguration();
+        vec.setToken("vec_h264_main");
+        vec.setName("H264_Main_1080p");
+        vec.setUseCount(1);
+        vec.setEncoding("H264");
+        vec.setResolution(new VideoResolution(1920, 1080));
+        vec.setQuality(4.0f);
+        vec.setRateControl(new VideoRateControl(30.0f, 1, 4096));
+        vec.setGovLength(30);
+        vec.setProfile("High");
+        MulticastConfiguration mc = new MulticastConfiguration();
+        mc.setAddress(new IPAddress("IPv4", "0.0.0.0"));
+        mc.setPort(0);
+        mc.setTtl(5);
+        mc.setAutoStart(false);
+        vec.setMulticast(mc);
+        return vec;
+    }
+
+    private PTZConfiguration buildPtzConfiguration() {
+        PTZConfiguration ptzConf = new PTZConfiguration();
+        ptzConf.setToken("ptz_config_main");
+        ptzConf.setName("PTZConfig_Main");
+        ptzConf.setNodeToken("ptz_node_main");
+        ptzConf.setDefaultAbsolutePantTiltPositionSpace(
+                "http://www.onvif.org/ver10/tptz/PanTiltSpaces/PositionGenericSpace");
+        ptzConf.setDefaultAbsoluteZoomPositionSpace(
+                "http://www.onvif.org/ver10/tptz/ZoomSpaces/PositionGenericSpace");
+        ptzConf.setDefaultPTZTimeout("PT10S");
+        ptzConf.setDefaultPTZSpeed(new PTZSpeed(
+                new Vector2D(0.5f, 0.5f), new Vector1D(0.5f)));
+        return ptzConf;
+    }
+
+    private MetadataConfiguration buildMetadataConfiguration() {
+        MetadataConfiguration mc = new MetadataConfiguration();
+        mc.setToken("metadata_config_main");
+        mc.setName("MetadataConfig_Main");
+        mc.setUseCount(1);
+        mc.setAnalytics(true);
+        mc.setSessionTimeout("PT1M");
+        mc.setPtzStatus(new PTZFilter(true, true));
+        mc.setEvents(new EventSubscription(
+                "tns1:RuleEngine//.* tns1:Device//.* tns1:VideoAnalytics//.*"));
+        mc.setCompressionType("None");
+        return mc;
     }
 }

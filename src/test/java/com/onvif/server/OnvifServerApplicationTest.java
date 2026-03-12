@@ -24,6 +24,9 @@ class OnvifServerApplicationTest {
     private DeviceServiceEndpoint deviceService;
 
     @Autowired
+    private MediaServiceEndpoint mediaService;
+
+    @Autowired
     private Media2ServiceEndpoint media2Service;
 
     @Autowired
@@ -78,6 +81,52 @@ class OnvifServerApplicationTest {
         String hostname = deviceService.getHostname();
         assertNotNull(hostname);
         assertFalse(hostname.isBlank());
+    }
+
+    // ----------------------------------------------------------------
+    // Media Service Tests (Profile S)
+    // ----------------------------------------------------------------
+
+    @Test
+    void testGetVideoSources() {
+        List<VideoSource> sources = mediaService.getVideoSources();
+        assertNotNull(sources);
+        assertFalse(sources.isEmpty());
+        VideoSource source = sources.get(0);
+        assertNotNull(source.getToken());
+        assertNotNull(source.getResolution());
+        assertTrue(source.getFramerate() > 0);
+    }
+
+    @Test
+    void testGetMediaProfiles() {
+        List<Profile> profiles = mediaService.getProfiles(null);
+        assertNotNull(profiles);
+        assertFalse(profiles.isEmpty());
+        Profile profile = profiles.get(0);
+        assertNotNull(profile.getToken());
+        assertNotNull(profile.getName());
+        assertNotNull(profile.getVideoSourceConfiguration());
+        assertNotNull(profile.getVideoEncoderConfiguration());
+    }
+
+    @Test
+    void testGetMediaVideoEncoderConfigurations() {
+        List<VideoEncoderConfiguration> configs = mediaService.getVideoEncoderConfigurations();
+        assertNotNull(configs);
+        assertFalse(configs.isEmpty());
+        VideoEncoderConfiguration config = configs.get(0);
+        assertNotNull(config.getToken());
+        assertNotNull(config.getEncoding());
+        assertTrue("H264".equalsIgnoreCase(config.getEncoding()),
+                "Media service must have an H.264 encoder configuration");
+    }
+
+    @Test
+    void testGetMediaVideoSourceConfigurations() {
+        List<VideoSourceConfiguration> configs = mediaService.getVideoSourceConfigurations();
+        assertNotNull(configs);
+        assertFalse(configs.isEmpty());
     }
 
     // ----------------------------------------------------------------
